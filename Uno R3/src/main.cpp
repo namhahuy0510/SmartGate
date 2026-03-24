@@ -1,61 +1,57 @@
-// Motor L298N điều khiển bằng Uno R3
-// Motor nối OUT3, OUT4
-// IN3 = D13, IN4 = D12, ENB = D11 (PWM)
-
 #include <Arduino.h>
+#include <SoftwareSerial.h>
 
 int IN3 = 13;
 int IN4 = 12;
 int ENB = 11;
 
-int targetSpeed = 100;   // tốc độ tối đa (0-255)
-int runTime   = 300;    // thời gian giữ tốc độ (ms)
-int stopTime  = 1000;    // thời gian brake (ms)
-int stepDelay = 30;      // độ mượt ramp (ms)
-
-void rampUp(int pinA, int pinB) {
-  digitalWrite(pinA, HIGH);
-  digitalWrite(pinB, LOW);
-  for (int s = 0; s <= targetSpeed; s += 5) {
-    analogWrite(ENB, s);
-    delay(stepDelay);
-  }
-}
-
-void rampDown() {
-  for (int s = targetSpeed; s >= 0; s -= 5) {
-    analogWrite(ENB, s);
-    delay(stepDelay);
-  }
-  // Brake mạnh
-  digitalWrite(IN3, HIGH);
-  digitalWrite(IN4, HIGH);
-  analogWrite(ENB, 255);
-}
+// RX = D10, TX = D9 (TX không dùng, chỉ RX)
+SoftwareSerial espSerial(10, 9);
 
 void setup() {
   pinMode(IN3, OUTPUT);
   pinMode(IN4, OUTPUT);
   pinMode(ENB, OUTPUT);
 
-  Serial.begin(9600);
-  Serial.println("Motor giả lập đóng/mở cửa với ramp up/down");
+  Serial.begin(115200);     // Monitor trên PC
+  espSerial.begin(115200);  // Nhận lệnh từ ESP32-CAM
+
+  Serial.println("UNO ready: nhận lệnh OPEN/CLOSE từ ESP32-CAM");
 }
 
 void loop() {
-  // Quay thuận (mở cửa)
-  Serial.println("Motor quay thuan (Mo cua)");
-  rampUp(IN3, IN4);
-  delay(runTime);
-  Serial.println("Ramp down + Brake");
-  rampDown();
-  delay(stopTime);
+  if (espSerial.available()) {
+    String cmd = espSerial.readStringUntil('\n');
+    cmd.trim();
 
-  // Quay ngược (đóng cửa)
-  Serial.println("Motor quay nguoc (Dong cua)");
-  rampUp(IN4, IN3);
-  delay(runTime);
-  Serial.println("Ramp down + Brake");
-  rampDown();
-  delay(stopTime);
+    int targetSpeed = random(80, 151);
+    int runTime     = random(200, 901);
+    int stopTime    = random(100, 201);
+    int stepDelay   = random(10, 41);
+
+    if (cmd == "OPEN") {
+      Serial.println("Lệnh OPEN");
+      // quay thuận
+      digitalWrite(IN3, HIGH);
+      digitalWrite(IN4, LOW);
+      analogWrite(ENB, targetSpeed);
+      delay(runTime);
+      digitalWrite(IN3, HIGH);
+      digitalWrite(IN4, HIGH);
+      analogWrite(ENB, 255);
+      delay(stopTime);
+
+    } else if (cmd == "CLOSE") {
+      Serial.println("Lệnh CLOSE");
+      // quay ngược
+      digitalWrite(IN3, LOW);
+      digitalWrite(IN4, HIGH);
+      analogWrite(ENB, targetSpeed);
+      delay(runTime);
+      digitalWrite(IN3, HIGH);
+      digitalWrite(IN4, HIGH);
+      analogWrite(ENB, 255);
+      delay(stopTime);
+    }
+  }
 }
