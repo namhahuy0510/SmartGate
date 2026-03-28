@@ -7,3 +7,6 @@
 
 ## Lắp ráp thực tế
 ![IMG_20260325_212432](https://github.com/user-attachments/assets/ce94c14b-c8f7-4745-8e05-2d857570fd32)
+
+## NX Siemens
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/d4a88207-1752-462c-9942-eb4af0864523" />
