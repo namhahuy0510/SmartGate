@@ -9,3 +9,5 @@ Phần mềm Nhận diện Khuôn mặt A.I Thời gian thực cho Cửa tự đ
  ```
 https://github.com/namhahuy0510/SmartGate/releases/tag/v1.0.0
 ```
+
+## Video: https://www.youtube.com/watch?v=YBPMeyQy5eA
